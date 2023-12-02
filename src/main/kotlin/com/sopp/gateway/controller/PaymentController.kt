@@ -10,6 +10,7 @@ import java.util.*
 
 @RestController
 @RequestMapping("payment")
+@CrossOrigin(origins = ["http://localhost:3000"])
 class PaymentController(
     private val paymentOrderService: PaymentOrderService,
     private val paymentRequestService: PaymentRequestService,

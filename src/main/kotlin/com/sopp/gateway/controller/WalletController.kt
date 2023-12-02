@@ -9,6 +9,7 @@ import org.springframework.web.server.ResponseStatusException
 
 @RestController
 @RequestMapping("wallet")
+@CrossOrigin(origins = ["http://localhost:3000"])
 class WalletController(
     private val walletService: WalletService
 ) {
