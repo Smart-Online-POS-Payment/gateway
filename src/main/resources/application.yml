@@ -22,6 +22,8 @@ sopp:
       url: http://localhost:8082/wallet
     payment:
       url:  http://localhost:8083/payment
+    notification:
+      url: http://localhost:8083/notification/token
 server:
   port: 8070
 firebase:
