@@ -1,6 +1,5 @@
 package com.sopp.gateway.controller
 
-import com.sopp.gateway.model.ResponseModel
 import com.sopp.gateway.service.FirebaseService
 import com.sopp.gateway.service.NotificationService
 import org.springframework.web.bind.annotation.*

@@ -1,9 +1,12 @@
 package com.sopp.gateway.controller
 
 import com.sopp.gateway.entity.PaymentRequestEntity
+import com.sopp.gateway.entity.PaymentTransactionEntity
+import com.sopp.gateway.model.PaymentTransactionModel
 import com.sopp.gateway.model.ResponseModel
 import com.sopp.gateway.service.FirebaseService
 import com.sopp.gateway.service.PaymentOrderService
+import com.sopp.gateway.service.PaymentRefundService
 import com.sopp.gateway.service.PaymentRequestService
 import org.springframework.web.bind.annotation.*
 import java.util.*
@@ -14,6 +17,7 @@ import java.util.*
 class PaymentController(
     private val paymentOrderService: PaymentOrderService,
     private val paymentRequestService: PaymentRequestService,
+    private val paymentRefundService: PaymentRefundService,
     private val firebaseService: FirebaseService
 ) {
 
@@ -49,10 +53,10 @@ class PaymentController(
     }
 
     @PostMapping("/payment-request")
-    suspend fun createPaymentRequest(@RequestHeader("Authorization") authorizationHeader: String, @RequestBody paymentRequestEntity: PaymentRequestEntity): ResponseModel {
-        val isValid = firebaseService.validateUserToken(authorizationHeader, paymentRequestEntity.merchantId)
+    suspend fun createPaymentRequest(@RequestHeader("Authorization") authorizationHeader: String, @RequestBody paymentTransactionModel: PaymentTransactionModel): ResponseModel {
+        val isValid = firebaseService.validateUserToken(authorizationHeader, paymentTransactionModel.merchantId)
         if (isValid){
-            paymentRequestService.createPaymentRequest(paymentRequestEntity)
+            paymentRequestService.createPaymentRequest(paymentTransactionModel)
         }
 
         return ResponseModel("400","Firebase token authentication failed")
@@ -85,6 +89,42 @@ class PaymentController(
             return paymentRequestService.getPaymentRequestDetail(uuid, customerId)
         }
 
+        return ResponseModel("400","Firebase token authentication failed")
+    }
+
+    @PostMapping("/{orderId}/customer/{customerId}")
+    suspend fun createRefund(@RequestHeader("Authorization") authorizationHeader: String, @PathVariable orderId: UUID, @PathVariable customerId: String): ResponseModel {
+        val isValid = firebaseService.validateUserToken(authorizationHeader, customerId)
+        if (isValid) {
+            return paymentRefundService.createRefund(orderId)
+        }
+        return ResponseModel("400","Firebase token authentication failed")
+    }
+
+    @PutMapping("/{reference}/merchant/{merchantId}")
+    suspend fun completeRefund(@RequestHeader("Authorization") authorizationHeader: String, @PathVariable reference: UUID, @PathVariable merchantId: String): ResponseModel {
+        val isValid = firebaseService.validateUserToken(authorizationHeader, merchantId)
+        if (isValid) {
+            return paymentRefundService.completeRefund(reference)
+        }
+        return ResponseModel("400","Firebase token authentication failed")
+    }
+
+    @GetMapping("request/customer/{customerId}")
+    suspend fun getCustomerRefundRequests(@RequestHeader("Authorization") authorizationHeader: String, @PathVariable customerId: String): Any {
+        val isValid = firebaseService.validateUserToken(authorizationHeader, customerId)
+        if (isValid) {
+            return paymentRefundService.getCustomerRefundRequests(customerId)
+        }
+        return ResponseModel("400","Firebase token authentication failed")
+    }
+
+    @GetMapping("request/merchant/{merchantId}")
+    suspend fun getMerchantRefundRequests(@RequestHeader("Authorization") authorizationHeader: String, @PathVariable merchantId: String): Any {
+        val isValid = firebaseService.validateUserToken(authorizationHeader, merchantId)
+        if (isValid) {
+            return paymentRefundService.getMerchantRefundRequests(merchantId)
+        }
         return ResponseModel("400","Firebase token authentication failed")
     }
 }

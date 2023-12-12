@@ -2,6 +2,8 @@ package com.sopp.gateway.client
 
 import com.sopp.gateway.entity.PaymentOrderEntity
 import com.sopp.gateway.entity.PaymentRequestEntity
+import com.sopp.gateway.entity.PaymentTransactionEntity
+import com.sopp.gateway.model.PaymentTransactionModel
 import com.sopp.gateway.model.ResponseModel
 import com.sopp.gateway.model.WalletModel
 import org.springframework.beans.factory.annotation.Qualifier
@@ -38,8 +40,8 @@ class PaymentClient(
             .awaitBody()
     }
 
-    suspend fun createPaymentRequest(paymentRequestEntity: PaymentRequestEntity): UUID?{
-        return client.post().uri("/payment-request").bodyValue(paymentRequestEntity).retrieve().awaitBody()
+    suspend fun createPaymentRequest(paymentTransactionModel: PaymentTransactionModel): UUID?{
+        return client.post().uri("/payment-request").bodyValue(paymentTransactionModel).retrieve().awaitBody()
     }
 
     suspend fun cancelPaymentRequest(merchantId: String, uuid: UUID){
@@ -52,5 +54,29 @@ class PaymentClient(
 
     suspend fun getPaymentRequestDetail(uuid: UUID, customerId: String): PaymentRequestEntity?{
         return client.get().uri("payment-request/$uuid/customer/$customerId").retrieve().awaitBody()
+    }
+
+    suspend fun createRefundRequest(id: UUID): ResponseModel{
+        return client.post().uri("/refund/$id").retrieve().awaitBody()
+    }
+
+    suspend fun finalizeRefund(reference: UUID): ResponseModel{
+        return client.put().uri("/refund/$reference").retrieve().awaitBody()
+    }
+
+    suspend fun getCustomerRefundRequests(customerId: String): List<PaymentTransactionEntity>{
+        return client.get().uri("refund/request/customer/$customerId").retrieve().awaitBody()
+    }
+
+    suspend fun getMerchantRefundRequests(merchantId: String): List<PaymentTransactionEntity>{
+        return client.get().uri("refund/request/merchant/$merchantId").retrieve().awaitBody()
+    }
+
+    suspend fun getCustomerRefunds(customerId: String): List<PaymentTransactionEntity>{
+        return client.get().uri("refund/customer/$customerId").retrieve().awaitBody()
+    }
+
+    suspend fun getMerchantRefunds(merchantId: String): List<PaymentTransactionEntity>{
+        return client.get().uri("refund/merchant/$merchantId").retrieve().awaitBody()
     }
 }
