@@ -14,7 +14,8 @@ class FirebaseService(
             val decodedToken = firebaseAuth.verifyIdToken(extractBearerToken(token))
             println(decodedToken)
             println(decodedToken.uid)
-            userId == decodedToken.uid
+            val uid = decodedToken.uid
+            userId == uid
         }catch (e: FirebaseException){
             println(e)
             false

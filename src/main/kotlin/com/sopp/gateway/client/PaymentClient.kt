@@ -3,9 +3,7 @@ package com.sopp.gateway.client
 import com.sopp.gateway.entity.PaymentOrderEntity
 import com.sopp.gateway.entity.PaymentRequestEntity
 import com.sopp.gateway.entity.PaymentTransactionEntity
-import com.sopp.gateway.model.PaymentTransactionModel
-import com.sopp.gateway.model.ResponseModel
-import com.sopp.gateway.model.WalletModel
+import com.sopp.gateway.model.*
 import org.springframework.beans.factory.annotation.Qualifier
 import org.springframework.stereotype.Service
 import org.springframework.web.bind.annotation.PathVariable
@@ -45,30 +43,30 @@ class PaymentClient(
     }
 
     suspend fun cancelPaymentRequest(merchantId: String, uuid: UUID){
-        client.get().uri("/payment-request/$merchantId/cancel/$uuid").retrieve()
+        client.get().uri("/payment-request/$merchantId/cancel/$uuid").retrieve().awaitBody<Unit>()
     }
 
     suspend fun cancelPaymentRequests(merchantId: String){
-        client.get().uri("/payment-request/cancel/$merchantId").retrieve()
+        client.get().uri("/payment-request/cancel/$merchantId").retrieve().awaitBody<Unit>()
     }
 
-    suspend fun getPaymentRequestDetail(uuid: UUID, customerId: String): PaymentRequestEntity?{
+    suspend fun getPaymentRequestDetail(uuid: UUID, customerId: String): PaymentModel?{
         return client.get().uri("payment-request/$uuid/customer/$customerId").retrieve().awaitBody()
     }
 
-    suspend fun createRefundRequest(id: UUID): ResponseModel{
-        return client.post().uri("/refund/$id").retrieve().awaitBody()
+    suspend fun createRefundRequest(id: UUID){
+        client.post().uri("/refund/$id").retrieve().awaitBody<Unit>()
     }
 
-    suspend fun finalizeRefund(reference: UUID): ResponseModel{
-        return client.put().uri("/refund/$reference").retrieve().awaitBody()
+    suspend fun finalizeRefund(id: UUID){
+        client.put().uri("/refund/$id").retrieve().awaitBody<Unit>()
     }
 
     suspend fun getCustomerRefundRequests(customerId: String): List<PaymentTransactionEntity>{
         return client.get().uri("refund/request/customer/$customerId").retrieve().awaitBody()
     }
 
-    suspend fun getMerchantRefundRequests(merchantId: String): List<PaymentTransactionEntity>{
+    suspend fun getMerchantRefundRequests(merchantId: String): List<RefundModel>{
         return client.get().uri("refund/request/merchant/$merchantId").retrieve().awaitBody()
     }
 
@@ -78,5 +76,13 @@ class PaymentClient(
 
     suspend fun getMerchantRefunds(merchantId: String): List<PaymentTransactionEntity>{
         return client.get().uri("refund/merchant/$merchantId").retrieve().awaitBody()
+    }
+
+    suspend fun getCustomerExpensesPerCategory(customerId: String): MutableMap<String, Double>{
+        return client.get().uri("/statistics/expenses/customer/${customerId}/category").retrieve().awaitBody()
+    }
+
+    suspend fun getMerchantIncomePerCategory(merchantId: String): List<StatsModel> {
+        return client.get().uri("/statistics/income/merchant/${merchantId}/category").retrieve().awaitBody()
     }
 }

@@ -1,27 +1,15 @@
 spring:
-  application.name: wallet
-  datasource:
-    url: jdbc:postgresql://${database.endpoint}/${database.name}
-    username: ${database.user}
-    password: ${database.password}
-  jpa:
-    show-sql: true
-    hibernate:
-      ddl-auto: update
-    properties:
-      hibernate:
-        dialect: org.hibernate.dialect.PostgreSQLDialect
-database:
-  endpoint: localhost:5432
-  name: sopp
-  user: db_user
-  password: db_pass
+  application.name: gateway
 sopp:
   server:
+    auth:
+      url: http://35.188.91.10:80/verify
     wallet:
-      url: http://localhost:8082/wallet
+      url: http://34.122.25.144:80/wallet
     payment:
-      url:  http://localhost:8083/payment
+      url:  http://34.41.35.12/payment
+    notification:
+      url: http://localhost:8084/notification/token
 server:
   port: 8070
 firebase:

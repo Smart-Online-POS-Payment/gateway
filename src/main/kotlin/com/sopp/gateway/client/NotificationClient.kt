@@ -10,7 +10,8 @@ class NotificationClient(
     @Qualifier("notificationWebClient")
     val client: WebClient
 ) {
-    suspend fun setToken(token: String, userId: String){
+    suspend fun setToken(token: String, userId: String): Boolean{
+        println(token)
         return client.post()
             .uri("/$token/user/$userId")
             .retrieve()

@@ -9,7 +9,7 @@ class NotificationService(
     private val notificationClient: NotificationClient
 ) {
 
-    suspend fun setToken(token: String, userId: String) {
-        notificationClient.setToken(token, userId)
+    suspend fun setToken(token: String, userId: String): Boolean {
+        return notificationClient.setToken(token, userId)
     }
 }

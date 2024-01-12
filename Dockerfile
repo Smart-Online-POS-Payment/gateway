@@ -1,0 +1,15 @@
+FROM gradle:8.5.0-jdk21
+
+RUN mkdir /app
+WORKDIR /app
+COPY . /app/
+
+COPY build/libs/gateway-0.0.1-SNAPSHOT.jar gateway.jar
+
+ENV SPRING_PROFILES_ACTIVE=container
+ENV SERVER_PORT=8080
+ENV MANAGEMENT_SERVER_PORT=9090
+
+EXPOSE $SERVER_PORT $MANAGEMENT_SERVER_PORT
+
+ENTRYPOINT ["java","-jar","gateway.jar"]

@@ -11,9 +11,9 @@ class NotificationController(
     private val firebaseService: FirebaseService,
     private val notificationService: NotificationService
 ) {
-    @PostMapping("{token}/user/{userId}")
-    suspend fun setToken(@RequestHeader("Authorization") authorizationHeader: String, @PathVariable token: String, @PathVariable userId: String) {
+    @PostMapping("/{token}/user/{userId}")
+    suspend fun setToken(@RequestHeader("Authorization") authorizationHeader: String, @PathVariable token: String, @PathVariable userId: String): Boolean {
         if(!firebaseService.validateUserToken(authorizationHeader, userId)) throw Exception("Firebase token verification failed")
-        notificationService.setToken(userId, token)
+        return notificationService.setToken(userId, token)
     }
 }

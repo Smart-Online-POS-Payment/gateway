@@ -1,17 +1,11 @@
 package com.sopp.gateway.model
 
-import jakarta.persistence.EnumType
-import jakarta.persistence.Enumerated
 import java.math.BigDecimal
 
 data class PaymentTransactionModel(
     var merchantId: String,
-    var customerId: String?,
     var paymentAmount: BigDecimal,
-    @Enumerated(EnumType.STRING)
-    var category: Category,
-    @Enumerated(EnumType.STRING)
-    val type: Type,
+    var category: String,
     var paymentMessage: String?
 ){
     enum class Type {

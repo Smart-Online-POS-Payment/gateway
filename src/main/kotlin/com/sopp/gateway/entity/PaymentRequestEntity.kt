@@ -1,13 +1,9 @@
 package com.sopp.gateway.entity
 
-import jakarta.persistence.*
 import java.math.BigDecimal
 import java.util.*
 
-@Entity
-@Table(name = "payment_requests")
 data class PaymentRequestEntity(
-    @Id
     val id: UUID = UUID.randomUUID(),
     var merchantId: String,
     var paymentAmount: BigDecimal,

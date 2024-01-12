@@ -2,6 +2,7 @@ package com.sopp.gateway.service
 
 import com.sopp.gateway.client.PaymentClient
 import com.sopp.gateway.entity.PaymentRequestEntity
+import com.sopp.gateway.model.PaymentModel
 import com.sopp.gateway.model.PaymentTransactionModel
 import org.springframework.stereotype.Service
 import java.util.*
@@ -23,7 +24,7 @@ class PaymentRequestService(
         paymentClient.cancelPaymentRequests(merchantId)
     }
 
-    suspend fun getPaymentRequestDetail(uuid:UUID, customerId: String): PaymentRequestEntity? {
+    suspend fun getPaymentRequestDetail(uuid:UUID, customerId: String): PaymentModel? {
         return paymentClient.getPaymentRequestDetail(uuid, customerId)
     }
 

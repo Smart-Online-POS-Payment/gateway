@@ -23,4 +23,9 @@ class WebClientConfig(
     fun notificationWebClient(@Value("\${sopp.server.notification.url}") baseUrl: String): WebClient{
         return clientBuilder.baseUrl(baseUrl).build()
     }
+
+    @Bean("authWebClient")
+    fun authWebClient(@Value("\${sopp.server.auth.url}") baseUrl: String): WebClient{
+        return clientBuilder.baseUrl(baseUrl).build()
+    }
 }

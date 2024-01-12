@@ -4,20 +4,19 @@ import com.sopp.gateway.entity.PaymentRequestEntity
 import com.sopp.gateway.entity.PaymentTransactionEntity
 import com.sopp.gateway.model.PaymentTransactionModel
 import com.sopp.gateway.model.ResponseModel
-import com.sopp.gateway.service.FirebaseService
-import com.sopp.gateway.service.PaymentOrderService
-import com.sopp.gateway.service.PaymentRefundService
-import com.sopp.gateway.service.PaymentRequestService
+import com.sopp.gateway.model.StatsModel
+import com.sopp.gateway.service.*
 import org.springframework.web.bind.annotation.*
 import java.util.*
 
 @RestController
-@RequestMapping("payment")
+@RequestMapping("/payment")
 @CrossOrigin(origins = ["http://localhost:3000"])
 class PaymentController(
     private val paymentOrderService: PaymentOrderService,
     private val paymentRequestService: PaymentRequestService,
     private val paymentRefundService: PaymentRefundService,
+    private val paymentStatisticsService: PaymentStatisticsService,
     private val firebaseService: FirebaseService
 ) {
 
@@ -53,10 +52,10 @@ class PaymentController(
     }
 
     @PostMapping("/payment-request")
-    suspend fun createPaymentRequest(@RequestHeader("Authorization") authorizationHeader: String, @RequestBody paymentTransactionModel: PaymentTransactionModel): ResponseModel {
+    suspend fun createPaymentRequest(@RequestHeader("Authorization") authorizationHeader: String, @RequestBody paymentTransactionModel: PaymentTransactionModel): Any? {
         val isValid = firebaseService.validateUserToken(authorizationHeader, paymentTransactionModel.merchantId)
         if (isValid){
-            paymentRequestService.createPaymentRequest(paymentTransactionModel)
+            return paymentRequestService.createPaymentRequest(paymentTransactionModel)
         }
 
         return ResponseModel("400","Firebase token authentication failed")
@@ -92,25 +91,17 @@ class PaymentController(
         return ResponseModel("400","Firebase token authentication failed")
     }
 
-    @PostMapping("/{orderId}/customer/{customerId}")
-    suspend fun createRefund(@RequestHeader("Authorization") authorizationHeader: String, @PathVariable orderId: UUID, @PathVariable customerId: String): ResponseModel {
-        val isValid = firebaseService.validateUserToken(authorizationHeader, customerId)
-        if (isValid) {
-            return paymentRefundService.createRefund(orderId)
-        }
-        return ResponseModel("400","Firebase token authentication failed")
+    @PostMapping("/refund/{orderId}")
+    suspend fun createRefund(@PathVariable orderId: UUID) {
+        paymentRefundService.createRefund(orderId)
     }
 
-    @PutMapping("/{reference}/merchant/{merchantId}")
-    suspend fun completeRefund(@RequestHeader("Authorization") authorizationHeader: String, @PathVariable reference: UUID, @PathVariable merchantId: String): ResponseModel {
-        val isValid = firebaseService.validateUserToken(authorizationHeader, merchantId)
-        if (isValid) {
-            return paymentRefundService.completeRefund(reference)
-        }
-        return ResponseModel("400","Firebase token authentication failed")
+    @PutMapping("/refund/{orderId}")
+    suspend fun completeRefund( @PathVariable orderId: UUID) {
+        paymentRefundService.completeRefund(orderId)
     }
 
-    @GetMapping("request/customer/{customerId}")
+    @GetMapping("/refund/request/customer/{customerId}")
     suspend fun getCustomerRefundRequests(@RequestHeader("Authorization") authorizationHeader: String, @PathVariable customerId: String): Any {
         val isValid = firebaseService.validateUserToken(authorizationHeader, customerId)
         if (isValid) {
@@ -119,12 +110,38 @@ class PaymentController(
         return ResponseModel("400","Firebase token authentication failed")
     }
 
-    @GetMapping("request/merchant/{merchantId}")
+    @GetMapping("/refund/request/merchant/{merchantId}")
     suspend fun getMerchantRefundRequests(@RequestHeader("Authorization") authorizationHeader: String, @PathVariable merchantId: String): Any {
         val isValid = firebaseService.validateUserToken(authorizationHeader, merchantId)
         if (isValid) {
+            println("entered")
             return paymentRefundService.getMerchantRefundRequests(merchantId)
         }
         return ResponseModel("400","Firebase token authentication failed")
+    }
+
+    @GetMapping("/statistics/expenses/customer/{customerId}/category")
+    suspend fun getCustomerExpensesPerCategory(
+        @RequestHeader("Authorization") authorizationHeader: String,
+        @PathVariable customerId: String,
+    ): MutableMap<String, Double>? {
+        print("Kaan")
+        val isValid = firebaseService.validateUserToken(authorizationHeader, customerId)
+        if (isValid) {
+            return paymentStatisticsService.getCustomerExpensesPerCategory(customerId)
+        }
+        return null
+    }
+
+    @GetMapping("/statistics/income/merchant/{merchantId}/category")
+    suspend fun getMerchantIncomePerCategory(
+        @RequestHeader("Authorization") authorizationHeader: String,
+        @PathVariable merchantId: String,
+    ): List<StatsModel>? {
+        val isValid = firebaseService.validateUserToken(authorizationHeader, merchantId)
+        if (isValid) {
+            return paymentStatisticsService.getMerchantIncomePerCategory(merchantId)
+        }
+        return null
     }
 }
